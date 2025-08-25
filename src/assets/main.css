@@ -1,10 +1,32 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: #f3f3f3;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-y: auto;
+  margin-left: 100px;
+  margin-right: 100px;
+  row-gap: 8px;
+}
+
 .header {
   font-size: 32px;
-  margin-left: 8px;
 }
 
 .meter-container {
   max-width: 600px;
   margin: 20px auto;
   padding: 20px;
+}
+
+.foreground {
+  background-color: #ffffff !important;
+  padding: 8px;
 }

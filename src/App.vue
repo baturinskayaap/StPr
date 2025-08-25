@@ -1,7 +1,9 @@
 <script setup>
-import MeterCmp from './components/MeterCmp.vue'
+import HeaderCmp from './components/HeaderCmp.vue'
+import ClientView from './view/ClientView.vue'
 </script>
 
 <template>
-  <MeterCmp />
+  <HeaderCmp />
+  <ClientView />
 </template>

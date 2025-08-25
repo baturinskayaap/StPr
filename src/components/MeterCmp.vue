@@ -1,7 +1,5 @@
 <template>
-  <n-h1 prefix="bar">
-    <n-text type="primary"> Счетчик 1 </n-text>
-  </n-h1>
+  <n-h2 prefix="bar"> Счетчик 1 </n-h2>
   <n-grid cols="1 s:1 m:2 " responsive="screen">
     <n-grid-item>
       <n-form-item label="Предыдущие показания" path="name">
@@ -29,7 +27,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { NFormItem, NInput, NButton, NH1, NText } from 'naive-ui'
+import { NFormItem, NInput, NButton, NH2 } from 'naive-ui'
 
 const formData = ref({
   name: '',
@@ -42,5 +40,3 @@ const handleSubmit = () => {
   console.log('Отправленные данные:', formData.value)
 }
 </script>
-
-<style scoped></style>
