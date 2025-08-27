@@ -30,3 +30,7 @@ body {
   background-color: #ffffff !important;
   padding: 8px;
 }
+
+.w-fit {
+  width: fit-content;
+}

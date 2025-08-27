@@ -17,12 +17,17 @@
       </n-form-item>
     </n-grid-item>
     <n-grid-item>
+      <n-form-item label="Начисленные пенни" path="name">
+        <n-input v-model:value="formData.name" placeholder="4" />
+      </n-form-item>
+    </n-grid-item>
+    <n-grid-item>
       <n-form-item label="Сумма к оплате" path="name">
         <n-input v-model:value="formData.name" placeholder="4" />
       </n-form-item>
     </n-grid-item>
   </n-grid>
-  <n-button type="primary" @click="handleSubmit"> Сохранить </n-button>
+  <n-button type="primary" @click="handleSubmit" class="w-fit"> Сохранить </n-button>
 </template>
 
 <script setup>

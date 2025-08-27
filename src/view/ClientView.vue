@@ -11,13 +11,13 @@
     </n-grid>
   </div>
 
-  <div class="foreground">
+  <div class="foreground w-fit">
     <n-h2>Итого: 1234</n-h2>
     <n-button type="primary" @click="handleSubmit"> Оплатить </n-button>
   </div>
 </template>
 
 <script setup>
-import MeterCmp from '@/components/MeterCmp.vue'
+import MeterCmp from '@/components/MeterToClientCmp.vue'
 import { NGrid, NGridItem, NH1, NH2 } from 'naive-ui'
 </script>

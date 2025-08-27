@@ -1,5 +1,5 @@
 <template>
-  <n-grid :cols="2" style="background-color: #ffffff">
+  <n-grid :cols="2" class="foreground">
     <n-grid-item class="header">
       <n-icon>
         <Lightning />
