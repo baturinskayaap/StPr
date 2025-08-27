@@ -3,10 +3,10 @@
     <n-h1>Договор 1</n-h1>
     <n-grid cols="2" responsive="screen" :x-gap="12" :y-gap="8">
       <n-grid-item>
-        <MeterCmp />
+        <MeterCmp :meterId="1" :contractId="1" />
       </n-grid-item>
       <n-grid-item>
-        <MeterCmp />
+        <MeterCmp :meterId="2" :contractId="1" />
       </n-grid-item>
     </n-grid>
   </div>

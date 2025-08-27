@@ -1,7 +1,7 @@
 <template>
   <n-form class="foreground">
     <n-form-item label="Фамилия">
-      <n-input placeholder="Введите ваше имя" />
+      <n-input v-model:value="currentUser.lastName" />
     </n-form-item>
     <n-form-item label="Имя">
       <n-input placeholder="Введите ваше имя" />
@@ -26,10 +26,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { NForm, NFormItem, NInput, NButton } from 'naive-ui'
-
-const inputValue = ref('123123') // Значение по умолчанию
-
-import ContractCmp from '@/components/ContractCmp.vue'
+import { store } from '../stores/counter'
+// import { ref } from 'vue'
+const currentUser = store.users[0] // Для примера берем первого пользователя
 </script>
