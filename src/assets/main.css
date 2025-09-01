@@ -29,6 +29,7 @@ body {
 .foreground {
   background-color: #ffffff !important;
   padding: 8px;
+  width: auto !important;
 }
 
 .w-fit {

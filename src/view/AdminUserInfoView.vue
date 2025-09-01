@@ -4,30 +4,41 @@
       <n-input v-model:value="currentUser.lastName" />
     </n-form-item>
     <n-form-item label="Имя">
-      <n-input placeholder="Введите ваше имя" />
+      <n-input v-model:value="currentUser.firstName" />
     </n-form-item>
     <n-form-item label="Отчество">
-      <n-input placeholder="Введите ваше имя" />
+      <n-input v-model:value="currentUser.middleName" />
     </n-form-item>
     <n-form-item label="Серия и номер паспорта">
-      <n-input placeholder="Введите ваше имя" />
+      <n-input v-model:value="currentUser.passport" />
     </n-form-item>
     <n-form-item label="Номер телефона">
-      <n-input placeholder="Введите ваше имя" />
+      <n-input v-model:value="currentUser.phone" />
     </n-form-item>
     <n-form-item label="Идентификатор">
-      <n-input type="text" v-model:value="inputValue" placeholder="Введите ID" readonly />
+      <n-input :value="currentUser.id" readonly />
     </n-form-item>
   </n-form>
 
-  <n-button class="w-fit" type="primary">Добавить договор</n-button>
+  <n-button class="w-fit" type="primary" @click="addNewContract">Добавить договор</n-button>
 
-  <ContractCmp />
+  <ContractCmp :user="currentUser" />
 </template>
 
 <script setup>
 import { NForm, NFormItem, NInput, NButton } from 'naive-ui'
 import { store } from '../stores/counter'
-// import { ref } from 'vue'
-const currentUser = store.users[0] // Для примера берем первого пользователя
+// import { computed } from 'vue'
+
+// const currentUser = computed(() => store.auth.currentUser)
+const currentUser = store.users[0]
+
+const addNewContract = () => {
+  const newContract = {
+    id: Date.now(),
+    meters: [],
+  }
+  store.addContract(currentUser.value.id, newContract.id)
+  store.contracts.push(newContract)
+}
 </script>

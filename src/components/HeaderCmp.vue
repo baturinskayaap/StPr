@@ -7,11 +7,12 @@
       <span>Личный кабинет</span>
     </n-grid-item>
 
-    <n-grid-item class="header" style="justify-self: end">
-      <n-icon>
-        <Lightning />
-      </n-icon>
-      <span>Личный кабинет</span>
+    <n-grid-item
+      class="header"
+      style="justify-self: end"
+      v-if="store.auth.isLoggedIn && store.auth.currentUser"
+    >
+      <span>{{ store.auth.currentUser.lastName }}</span>
     </n-grid-item>
   </n-grid>
 </template>
@@ -19,4 +20,5 @@
 <script setup>
 import { NGrid, NGridItem, NIcon } from 'naive-ui'
 import { Lightning } from '@vicons/carbon'
+import { store } from '../stores/counter' // Импортируем хранилище
 </script>
