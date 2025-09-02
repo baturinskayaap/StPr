@@ -98,22 +98,32 @@ export const store = reactive({
 
   login(code, isAdmin = false) {
     if (isAdmin) {
-      // Проверка пароля администратора (можно вынести в конфиг)
       if (code === 'admin123') {
         this.auth.isLoggedIn = true
         this.auth.isAdmin = true
       }
     } else {
-      const user = this.users.find((u) => u.code === code)
+      const user = this.users.find((u) => u.id === code)
       if (user) {
         this.auth.isLoggedIn = true
         this.auth.currentUser = user
       }
     }
   },
+
   logout() {
     this.auth.isLoggedIn = false
     this.auth.currentUser = null
     this.auth.isAdmin = false
+  },
+
+  getUserById(userId) {
+    return this.users.find((u) => u.id === userId)
+  },
+
+  getUserContracts(userId) {
+    const user = this.getUserById(userId)
+    if (!user) return []
+    return this.contracts.filter((c) => user.contracts.includes(c.id))
   },
 })

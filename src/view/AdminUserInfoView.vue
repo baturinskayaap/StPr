@@ -27,18 +27,29 @@
 
 <script setup>
 import { NForm, NFormItem, NInput, NButton } from 'naive-ui'
-import { store } from '../stores/counter'
-// import { computed } from 'vue'
+import { store } from '@/stores/counter'
+import { computed } from 'vue'
+import ContractCmp from '@/components/ContractCmp.vue'
 
-// const currentUser = computed(() => store.auth.currentUser)
-const currentUser = store.users[0]
+const currentUser = computed(() => store.auth.currentUser)
 
 const addNewContract = () => {
+  const newContractId = Math.max(...store.contracts.map((c) => c.id), 0) + 1
   const newContract = {
-    id: Date.now(),
-    meters: [],
+    id: newContractId,
+    meters: [
+      {
+        id: 1,
+        prevReading: 0,
+        currentReading: 0,
+        consumption: 0,
+        penalty: 0,
+        amount: 0,
+      },
+    ],
   }
-  store.addContract(currentUser.value.id, newContract.id)
+
   store.contracts.push(newContract)
+  currentUser.value.contracts.push(newContractId)
 }
 </script>

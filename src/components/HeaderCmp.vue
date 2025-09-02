@@ -1,24 +1,33 @@
 <template>
-  <n-grid :cols="2" class="foreground">
-    <n-grid-item class="header">
-      <n-icon>
-        <Lightning />
-      </n-icon>
-      <span>Личный кабинет</span>
-    </n-grid-item>
+  <n-layout-header bordered class="header">
+    <n-icon size="24">
+      <Lightning />
+    </n-icon>
+    <span>Личный кабинет</span>
 
-    <n-grid-item
-      class="header"
-      style="justify-self: end"
-      v-if="store.auth.isLoggedIn && store.auth.currentUser"
-    >
-      <span>{{ store.auth.currentUser.lastName }}</span>
-    </n-grid-item>
-  </n-grid>
+    <div v-if="store.auth.isLoggedIn">
+      <span v-if="store.auth.currentUser">
+        {{ store.auth.currentUser.lastName }}
+      </span>
+      <n-button @click="handleLogout" text>
+        <n-icon>
+          <Exit />
+        </n-icon>
+      </n-button>
+    </div>
+  </n-layout-header>
 </template>
 
 <script setup>
-import { NGrid, NGridItem, NIcon } from 'naive-ui'
-import { Lightning } from '@vicons/carbon'
-import { store } from '../stores/counter' // Импортируем хранилище
+import { NLayoutHeader, NIcon, NButton } from 'naive-ui'
+import { Lightning, Exit } from '@vicons/carbon'
+import { store } from '@/stores/counter'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const handleLogout = () => {
+  store.logout()
+  router.push('/login')
+}
 </script>

@@ -1,32 +1,29 @@
 <template>
   <n-card class="login-form">
-    <n-tabs type="line">
-      <n-tab-pane name="user" tab="Пользователь">
-        <n-input v-model:value="userCode" placeholder="Введите ваш код" />
-        <n-button @click="handleUserLogin" class="mt-4">Войти</n-button>
-      </n-tab-pane>
-
-      <n-tab-pane name="admin" tab="Администратор">
-        <n-input v-model:value="adminPass" type="password" placeholder="Пароль администратора" />
-        <n-button @click="handleAdminLogin" class="mt-4">Войти</n-button>
-      </n-tab-pane>
-    </n-tabs>
+    <n-input v-model:value="userCode" placeholder="Введите ваш код" />
+    <n-button @click="handleUserLogin" class="mt-4">Войти</n-button>
   </n-card>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { store } from '../stores/counter'
-import { NCard, NTabs, NTabPane, NInput, NButton } from 'naive-ui'
+import { NCard, NInput, NButton } from 'naive-ui'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const userCode = ref('')
-const adminPass = ref('')
 
 const handleUserLogin = () => {
-  store.login(userCode.value)
-}
+  const isAdminAttempt = userCode.value === 'admin123'
+  store.login(userCode.value, isAdminAttempt)
 
-const handleAdminLogin = () => {
-  store.login(adminPass.value, true)
+  if (store.auth.isLoggedIn) {
+    if (store.auth.isAdmin) {
+      router.push({ name: 'AdminDashboard' })
+    } else {
+      router.push({ name: 'Client' })
+    }
+  }
 }
 </script>
