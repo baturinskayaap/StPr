@@ -30,4 +30,8 @@ const totalAmount = computed(() => {
     return total + contract.meters.reduce((sum, meter) => sum + meter.amount, 0)
   }, 0)
 })
+
+const handleSubmit = () => {
+  store.pay(store.auth.currentUser.id)
+}
 </script>

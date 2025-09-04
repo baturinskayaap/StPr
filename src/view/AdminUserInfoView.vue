@@ -26,12 +26,17 @@
 </template>
 
 <script setup>
-import { NForm, NFormItem, NInput, NButton } from 'naive-ui'
+import { useRoute, useRouter } from 'vue-router'
 import { store } from '@/stores/counter'
 import { computed } from 'vue'
-import ContractCmp from '@/components/ContractCmp.vue'
 
-const currentUser = computed(() => store.auth.currentUser)
+const route = useRoute()
+const router = useRouter()
+const currentUser = computed(() => store.users.find((u) => u.id === route.params.userId))
+
+if (!currentUser.value) {
+  router.push('/admin/dashboard')
+}
 
 const addNewContract = () => {
   const newContractId = Math.max(...store.contracts.map((c) => c.id), 0) + 1

@@ -1,7 +1,6 @@
 import { reactive } from 'vue'
 
 export const store = reactive({
-  // Пользователи
   users: [
     {
       id: '123',
@@ -14,12 +13,10 @@ export const store = reactive({
     },
   ],
 
-  // Договоры
   contracts: [
     {
       id: 1,
       meters: [
-        // Непосредственно храним объекты счетчиков
         {
           id: 1,
           prevReading: 1,
@@ -67,6 +64,7 @@ export const store = reactive({
   },
 
   addContract(userId, newContract) {
+    //используем стор - добавляем контракты
     const user = this.users.find((u) => u.id === userId)
     if (user) {
       user.contracts.push(newContract)
@@ -77,15 +75,12 @@ export const store = reactive({
     if (contract) {
       const meter = contract.meters.find((m) => m.id === meterData.id)
       if (meter) {
-        // Расчет показаний
         const consumption = meterData.currentReading - meter.prevReading
-        const tariff = 5 // Тариф за единицу
-        const daysOverdue = 30 // Дней просрочки
+        const tariff = 5
+        const daysOverdue = 30
 
-        // Расчет пенни (0.1% в день)
         const penalty = consumption * tariff * 0.001 * daysOverdue
 
-        // Обновление данных
         Object.assign(meter, {
           ...meterData,
           consumption,
@@ -93,6 +88,21 @@ export const store = reactive({
           amount: consumption * tariff + penalty,
         })
       }
+    }
+  },
+
+  pay(userId) {
+    const user = this.getUserById(userId)
+    if (user) {
+      user.contracts.forEach((contractId) => {
+        const contract = this.contracts.find((c) => c.id === contractId)
+        contract.meters.forEach((meter) => {
+          meter.prevReading = meter.currentReading
+          meter.penalty = 0
+          meter.amount = 0
+          meter.consumption = 0
+        })
+      })
     }
   },
 

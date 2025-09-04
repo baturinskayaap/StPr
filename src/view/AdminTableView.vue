@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-dashboard">
+  <div class="meter-container">
     <n-h1>Панель администратора</n-h1>
 
     <n-card>
@@ -8,6 +8,7 @@
         :data="tableData"
         :bordered="true"
         :pagination="pagination"
+        :rowProps="rowProps"
       />
     </n-card>
   </div>
@@ -17,6 +18,8 @@
 import { NH1, NCard, NDataTable, NTag } from 'naive-ui'
 import { store } from '@/stores/counter'
 import { computed, h } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 const columns = [
   {
@@ -31,11 +34,6 @@ const columns = [
       const user = store.users.find((u) => u.id === row.userId)
       return user ? `${user.lastName} ${user.firstName} (ID: ${row.userId})` : row.userId
     },
-  },
-  {
-    title: 'Дата последней передачи',
-    key: 'lastReadingDate',
-    render: (row) => row.lastReadingDate || 'Не передавались',
   },
   {
     title: 'Сумма пенальти',
@@ -73,12 +71,10 @@ const tableData = computed(() => {
 
     if (user) {
       const totalPenalty = contract.meters.reduce((sum, meter) => sum + meter.penalty, 0)
-      const lastReadingDate = getLastReadingDate(contract)
 
       data.push({
         contractId: contract.id,
         userId: user.id,
-        lastReadingDate,
         totalPenalty,
       })
     }
@@ -87,18 +83,17 @@ const tableData = computed(() => {
   return data
 })
 
-function getLastReadingDate() {
-  //contract
-  const daysAgo = Math.floor(Math.random() * 30)
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
+const rowProps = (row) => {
+  return {
+    style: 'cursor: pointer;',
+    onClick: () => handleRowClick(row),
+  }
+}
 
-  return date.toLocaleDateString('ru-RU')
+const handleRowClick = (row) => {
+  router.push({
+    name: 'AdminUserInfo',
+    params: { userId: row.userId },
+  })
 }
 </script>
-
-<style scoped>
-.admin-dashboard {
-  padding: 20px;
-}
-</style>

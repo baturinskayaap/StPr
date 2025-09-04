@@ -23,8 +23,8 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/admin/users',
-    name: 'AdminUsers',
+    path: '/admin/users/:userId',
+    name: 'AdminUserInfo',
     component: AdminUserInfo,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
