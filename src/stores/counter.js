@@ -1,139 +1,115 @@
 import { reactive } from 'vue'
+import axios from 'axios'
 
 export const store = reactive({
-  users: [
-    {
-      id: '123',
-      lastName: 'Пупкин',
-      firstName: 'Вася',
-      middleName: 'Олегович',
-      passport: '12123',
-      phone: '123123',
-      contracts: [1, 2],
-    },
-  ],
-
-  contracts: [
-    {
-      id: 1,
-      meters: [
-        {
-          id: 1,
-          prevReading: 1,
-          currentReading: 0,
-          consumption: 0,
-          penalty: 0,
-          amount: 0,
-        },
-        {
-          id: 2,
-          prevReading: 0,
-          currentReading: 0,
-          consumption: 0,
-          penalty: 0,
-          amount: 0,
-        },
-      ],
-    },
-    {
-      id: 2,
-      meters: [
-        {
-          id: 1,
-          prevReading: 1,
-          currentReading: 0,
-          consumption: 0,
-          penalty: 0,
-          amount: 0,
-        },
-        {
-          id: 2,
-          prevReading: 0,
-          currentReading: 0,
-          consumption: 0,
-          penalty: 0,
-          amount: 0,
-        },
-      ],
-    },
-  ],
-  auth: {
-    isLoggedIn: false,
-    currentUser: null,
-    isAdmin: false,
+  state: {
+    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
+    isAdmin: localStorage.getItem('isAdmin') === 'true',
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    contracts: JSON.parse(localStorage.getItem('contracts') || '[]'),
   },
 
-  addContract(userId, newContract) {
-    //используем стор - добавляем контракты
-    const user = this.users.find((u) => u.id === userId)
-    if (user) {
-      user.contracts.push(newContract)
+  async init() {
+    axios.defaults.baseURL = 'http://localhost:3000/api'
+    const token = localStorage.getItem('token')
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     }
   },
-  updateMeter(contractId, meterData) {
-    const contract = this.contracts.find((c) => c.id === contractId)
-    if (contract) {
-      const meter = contract.meters.find((m) => m.id === meterData.id)
-      if (meter) {
-        const consumption = meterData.currentReading - meter.prevReading
-        const tariff = 5
-        const daysOverdue = 30
 
-        const penalty = consumption * tariff * 0.001 * daysOverdue
-
-        Object.assign(meter, {
-          ...meterData,
-          consumption,
-          penalty,
-          amount: consumption * tariff + penalty,
-        })
+  async login(code, isAdmin = false) {
+    try {
+      if (!code || typeof code !== 'string') {
+        throw new Error('Неверный формат кода')
       }
-    }
-  },
 
-  pay(userId) {
-    const user = this.getUserById(userId)
-    if (user) {
-      user.contracts.forEach((contractId) => {
-        const contract = this.contracts.find((c) => c.id === contractId)
-        contract.meters.forEach((meter) => {
-          meter.prevReading = meter.currentReading
-          meter.penalty = 0
-          meter.amount = 0
-          meter.consumption = 0
-        })
+      const response = await axios.post('/auth/login', {
+        code: code.trim(),
+        isAdmin,
       })
-    }
-  },
 
-  login(code, isAdmin = false) {
-    if (isAdmin) {
-      if (code === 'admin123') {
-        this.auth.isLoggedIn = true
-        this.auth.isAdmin = true
+      const token = response.data.token
+      localStorage.setItem('token', token)
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+      localStorage.setItem('isLoggedIn', 'true')
+      this.state.isLoggedIn = true
+
+      if (isAdmin) {
+        if (!response.data.isAdmin) {
+          throw new Error('Ожидались права администратора')
+        }
+
+        localStorage.setItem('isAdmin', 'true')
+        this.state.isAdmin = true
+
+        localStorage.removeItem('user')
+        localStorage.removeItem('contracts')
+        this.state.user = null
+        this.state.contracts = []
+      } else {
+        if (!response.data.user) {
+          throw new Error('Данные пользователя не получены')
+        }
+
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        localStorage.setItem('contracts', JSON.stringify(response.data.user.contracts || []))
+
+        this.state.user = response.data.user
+        this.state.contracts = response.data.user.contracts || []
+        this.state.isAdmin = false
+        localStorage.setItem('isAdmin', 'false')
       }
-    } else {
-      const user = this.users.find((u) => u.id === code)
-      if (user) {
-        this.auth.isLoggedIn = true
-        this.auth.currentUser = user
-      }
+
+      return true
+    } catch (error) {
+      console.error('Ошибка входа:', error)
+      this.logout()
     }
   },
 
   logout() {
-    this.auth.isLoggedIn = false
-    this.auth.currentUser = null
-    this.auth.isAdmin = false
+    localStorage.clear()
+    this.state.isLoggedIn = false
+    this.state.isAdmin = false
+    this.state.user = null
+    this.state.contracts = []
+    delete axios.defaults.headers.common['Authorization']
   },
 
-  getUserById(userId) {
-    return this.users.find((u) => u.id === userId)
+  async updateMeter(contractId, meterId, currentReading) {
+    const contract = this.state.contracts.find((c) => c.id === contractId)
+    const meter = contract?.meters.find((m) => m.id === meterId)
+
+    if (!meter) return false
+
+    const consumption = currentReading - meter.prevReading
+    const tariff = 5
+    const daysOverdue = 30
+    const penalty = consumption * tariff * 0.001 * daysOverdue
+
+    meter.currentReading = currentReading
+    meter.consumption = consumption
+    meter.penalty = penalty
+    meter.amount = consumption * tariff + penalty
+
+    return true
   },
 
-  getUserContracts(userId) {
-    const user = this.getUserById(userId)
-    if (!user) return []
-    return this.contracts.filter((c) => user.contracts.includes(c.id))
+  // Оплата
+  async pay() {
+    if (!this.state.user) return false
+
+    this.state.contracts.forEach((contract) => {
+      contract.meters.forEach((meter) => {
+        meter.prevReading = meter.currentReading
+        meter.penalty = 0
+        meter.amount = 0
+        meter.consumption = 0
+      })
+    })
+
+    return true
   },
 })
+store.init()

@@ -32,29 +32,18 @@ import { computed } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
-const currentUser = computed(() => store.users.find((u) => u.id === route.params.userId))
+
+//api
+const currentUser = computed(() => {
+  return store.state.user || { id: route.params.userId }
+})
 
 if (!currentUser.value) {
   router.push('/admin/dashboard')
 }
 
 const addNewContract = () => {
-  const newContractId = Math.max(...store.contracts.map((c) => c.id), 0) + 1
-  const newContract = {
-    id: newContractId,
-    meters: [
-      {
-        id: 1,
-        prevReading: 0,
-        currentReading: 0,
-        consumption: 0,
-        penalty: 0,
-        amount: 0,
-      },
-    ],
-  }
-
-  store.contracts.push(newContract)
-  currentUser.value.contracts.push(newContractId)
+  // api
+  console.log('Adding new contract for user:', currentUser.value.id)
 }
 </script>

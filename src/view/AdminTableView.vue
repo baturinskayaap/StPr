@@ -19,6 +19,7 @@ import { NH1, NCard, NDataTable, NTag } from 'naive-ui'
 import { store } from '@/stores/counter'
 import { computed, h } from 'vue'
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
 
 const columns = [
@@ -31,7 +32,7 @@ const columns = [
     title: 'Идентификатор пользователя',
     key: 'userId',
     render: (row) => {
-      const user = store.users.find((u) => u.id === row.userId)
+      const user = store.state.user
       return user ? `${user.lastName} ${user.firstName} (ID: ${row.userId})` : row.userId
     },
   },
@@ -66,18 +67,14 @@ const pagination = {
 const tableData = computed(() => {
   const data = []
 
-  store.contracts.forEach((contract) => {
-    const user = store.users.find((u) => u.contracts.includes(contract.id))
+  store.state.contracts.forEach((contract) => {
+    const totalPenalty = contract.meters.reduce((sum, meter) => sum + meter.penalty, 0)
 
-    if (user) {
-      const totalPenalty = contract.meters.reduce((sum, meter) => sum + meter.penalty, 0)
-
-      data.push({
-        contractId: contract.id,
-        userId: user.id,
-        totalPenalty,
-      })
-    }
+    data.push({
+      contractId: contract.id,
+      userId: store.state.user?.id || 'N/A',
+      totalPenalty,
+    })
   })
 
   return data

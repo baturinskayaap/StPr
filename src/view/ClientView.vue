@@ -21,17 +21,18 @@ import { store } from '@/stores/counter'
 import { computed } from 'vue'
 
 const userContracts = computed(() => {
-  if (!store.auth.currentUser) return []
-  return store.getUserContracts(store.auth.currentUser.id)
+  return store.state.contracts || []
 })
 
 const totalAmount = computed(() => {
-  return userContracts.value.reduce((total, contract) => {
-    return total + contract.meters.reduce((sum, meter) => sum + meter.amount, 0)
+  const contracts = userContracts.value
+  return contracts.reduce((total, contract) => {
+    const meters = contract.meters || []
+    return total + meters.reduce((sum, meter) => sum + (meter.amount || 0), 0)
   }, 0)
 })
 
 const handleSubmit = () => {
-  store.pay(store.auth.currentUser.id)
+  store.pay()
 }
 </script>

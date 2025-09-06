@@ -24,11 +24,11 @@ import MeterCmp from '@/components/MeterToAdminCmp.vue'
 import { store } from '@/stores/counter'
 import { computed } from 'vue'
 
-const props = defineProps({
-  user: Object,
-})
+// const props = defineProps({
+//   user: Object,
+// })
 
 const userContracts = computed(() => {
-  return store.contracts.filter((c) => props.user.contracts.includes(c.id))
+  return store.state.contracts || []
 })
 </script>

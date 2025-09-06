@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { store } from '@/stores/counter'
+
 import LoginView from '../view/LoginView.vue'
 import ClientView from '../view/ClientView.vue'
 import AdminUserInfo from '../view/AdminUserInfoView.vue'
@@ -26,13 +27,19 @@ const routes = [
     path: '/admin/users/:userId',
     name: 'AdminUserInfo',
     component: AdminUserInfo,
-    meta: { requiresAuth: true, requiresAdmin: true },
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
   },
   {
     path: '/admin/dashboard',
     name: 'AdminDashboard',
     component: AdminDashboard,
-    meta: { requiresAuth: true, requiresAdmin: true },
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
   },
 ]
 
@@ -41,15 +48,18 @@ const router = createRouter({
   routes,
 })
 
-// Простой навигационный guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = store.auth.isLoggedIn
-  const isAdmin = store.auth.isAdmin
+  const isAuthenticated = store.state.isLoggedIn
+  const isAdmin = store.state.isAdmin
+
+  console.log('Navigation to:', to.name)
+  console.log('Auth status:', isAuthenticated)
+  console.log('Admin status:', isAdmin)
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
+    next({ name: 'Login' })
   } else if (to.meta.requiresAdmin && !isAdmin) {
-    next(isAuthenticated ? '/client' : '/login')
+    next(isAuthenticated ? { name: 'Client' } : { name: 'Login' })
   } else {
     next()
   }
