@@ -3,9 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export default (sequelize) => {
   const router = express.Router()
-  const User = sequelize.models.User
-  const Contract = sequelize.models.Contract
-  const Meter = sequelize.models.Meter
+  const { User, Contract, Meter } = sequelize.models
 
   router.post('/login', async (req, res) => {
     try {
@@ -33,17 +31,21 @@ export default (sequelize) => {
       })
 
       if (!user) return res.status(404).json({ message: 'Пользователь не найден' })
+      const userResponse = {
+        id: user.id,
+        code: user.code,
+        lastName: user.lastName,
+        firstName: user.firstName,
+        contracts: user.Contracts.map((contract) => ({
+          ...contract.toJSON(),
+          meters: contract.Meters, // Rename Meters to meters
+        })),
+      }
 
       res.json({
         token: uuidv4(),
         isAdmin: false,
-        user: {
-          id: user.id,
-          code: user.code,
-          lastName: user.lastName,
-          firstName: user.firstName,
-          contracts: user.Contracts,
-        },
+        user: userResponse,
       })
     } catch (error) {
       console.error('Login error:', error)

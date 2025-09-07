@@ -83,9 +83,14 @@ app.use(cors())
 app.use(express.json())
 
 // Подключение роутов
-app.use('/api/auth', authRouter())
-app.use('/api/contracts', contractsRouter())
+app.use('/api/auth', authRouter(sequelize))
+app.use('/api/contracts', contractsRouter(sequelize))
 
 app.listen(3000, () => console.log('Server started on port 3000'))
+
+User.hasMany(Contract, { foreignKey: 'UserId' })
+Contract.belongsTo(User, { foreignKey: 'UserId' })
+Contract.hasMany(Meter, { foreignKey: 'ContractId' })
+Meter.belongsTo(Contract, { foreignKey: 'ContractId' })
 
 export { sequelize }

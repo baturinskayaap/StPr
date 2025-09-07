@@ -41,8 +41,9 @@ const props = defineProps({
 })
 
 const meterData = computed(() => {
-  const contract = store.state.contracts.find((c) => c.id === props.contractId)
-  return contract ? contract.meters.find((m) => m.id === props.meterId) : {}
+  const contract = store.state.contracts.find((c) => c.id === parseInt(props.contractId))
+  if (!contract) return {}
+  return contract.meters ? contract.meters.find((m) => m.id === parseInt(props.meterId)) : {}
 })
 
 const currentReading = ref(meterData.value.currentReading)

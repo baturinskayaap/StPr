@@ -43,10 +43,20 @@ export const store = reactive({
         localStorage.setItem('isAdmin', 'true')
         this.state.isAdmin = true
 
+        // For admin, fetch all contracts
+        try {
+          const contractsResponse = await axios.get('/contracts/admin/contracts')
+          this.state.contracts = contractsResponse.data
+          localStorage.setItem('contracts', JSON.stringify(this.state.contracts))
+        } catch (error) {
+          console.error('Ошибка загрузки контрактов для администратора:', error)
+          // Even if contracts fail to load, admin login should still succeed
+          this.state.contracts = []
+          localStorage.setItem('contracts', JSON.stringify([]))
+        }
+
         localStorage.removeItem('user')
-        localStorage.removeItem('contracts')
         this.state.user = null
-        this.state.contracts = []
       } else {
         if (!response.data.user) {
           throw new Error('Данные пользователя не получены')
@@ -65,6 +75,7 @@ export const store = reactive({
     } catch (error) {
       console.error('Ошибка входа:', error)
       this.logout()
+      throw error // Re-throw to handle in the component
     }
   },
 

@@ -4,6 +4,7 @@ export default (sequelize) => {
   const router = express.Router()
   const Contract = sequelize.models.Contract
   const Meter = sequelize.models.Meter
+  const User = sequelize.models.User
 
   router.put('/:contractId/meters/:meterId', async (req, res) => {
     try {
@@ -61,6 +62,32 @@ export default (sequelize) => {
       res.status(500).json({ message: 'Ошибка сервера' })
     }
   })
+  router.get('/admin/contracts', async (req, res) => {
+    try {
+      const contracts = await Contract.findAll({
+        include: [
+          {
+            model: Meter,
+          },
+          {
+            model: User,
+            attributes: ['id', 'firstName', 'lastName', 'code', 'phone', 'passport'],
+          },
+        ],
+      })
 
+      // Преобразуем данные для фронтенда
+      const transformedContracts = contracts.map((contract) => ({
+        ...contract.toJSON(),
+        meters: contract.Meters,
+        user: contract.User,
+      }))
+
+      res.json(transformedContracts)
+    } catch (error) {
+      console.error('Get contracts error:', error)
+      res.status(500).json({ message: 'Ошибка сервера' })
+    }
+  })
   return router
 }
