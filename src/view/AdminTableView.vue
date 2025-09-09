@@ -29,12 +29,18 @@ const columns = [
     sorter: (a, b) => a.contractId - b.contractId,
   },
   {
-    title: 'Идентификатор пользователя',
-    key: 'userId',
+    title: 'Пользователь',
+    key: 'userInfo',
     render: (row) => {
-      const user = store.state.user
-      return user ? `${user.lastName} ${user.firstName} (ID: ${row.userId})` : row.userId
+      return row.user
+        ? `${row.user.lastName} ${row.user.firstName} (ID: ${row.user.id})`
+        : 'Неизвестный пользователь'
     },
+  },
+  {
+    title: 'Адрес',
+    key: 'address',
+    render: (row) => row.address || 'Не указан',
   },
   {
     title: 'Сумма пенальти',
@@ -65,19 +71,16 @@ const pagination = {
 }
 
 const tableData = computed(() => {
-  const data = []
+  return store.state.contracts.map((contract) => {
+    const totalPenalty = contract.meters?.reduce((sum, meter) => sum + (meter.penalty || 0), 0) || 0
 
-  store.state.contracts.forEach((contract) => {
-    const totalPenalty = contract.meters.reduce((sum, meter) => sum + meter.penalty, 0)
-
-    data.push({
+    return {
       contractId: contract.id,
-      userId: store.state.user?.id || 'N/A',
+      address: contract.address,
+      user: contract.user,
       totalPenalty,
-    })
+    }
   })
-
-  return data
 })
 
 const rowProps = (row) => {
@@ -88,9 +91,11 @@ const rowProps = (row) => {
 }
 
 const handleRowClick = (row) => {
-  router.push({
-    name: 'AdminUserInfo',
-    params: { userId: row.userId },
-  })
+  if (row.user) {
+    router.push({
+      name: 'AdminUserInfo',
+      params: { userId: row.user.id },
+    })
+  }
 }
 </script>

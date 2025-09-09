@@ -1,5 +1,4 @@
 import express from 'express'
-import { v4 as uuidv4 } from 'uuid'
 
 export default (sequelize) => {
   const router = express.Router()
@@ -12,7 +11,6 @@ export default (sequelize) => {
       if (isAdmin) {
         if (code === 'admin123') {
           return res.json({
-            token: uuidv4(),
             isAdmin: true,
             user: null,
           })
@@ -22,30 +20,23 @@ export default (sequelize) => {
 
       const user = await User.findOne({
         where: { code },
-        include: [
-          {
-            model: Contract,
-            include: [Meter],
-          },
-        ],
+        include: [{ model: Contract, include: [Meter] }],
       })
 
       if (!user) return res.status(404).json({ message: 'Пользователь не найден' })
-      const userResponse = {
-        id: user.id,
-        code: user.code,
-        lastName: user.lastName,
-        firstName: user.firstName,
-        contracts: user.Contracts.map((contract) => ({
-          ...contract.toJSON(),
-          meters: contract.Meters, // Rename Meters to meters
-        })),
-      }
 
       res.json({
-        token: uuidv4(),
         isAdmin: false,
-        user: userResponse,
+        user: {
+          id: user.id,
+          code: user.code,
+          lastName: user.lastName,
+          firstName: user.firstName,
+          contracts: user.Contracts.map((contract) => ({
+            ...contract.toJSON(),
+            meters: contract.Meters,
+          })),
+        },
       })
     } catch (error) {
       console.error('Login error:', error)
@@ -54,13 +45,7 @@ export default (sequelize) => {
   })
 
   router.get('/check', (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1]
-    if (!token) return res.status(401).json({ isValid: false })
-
-    res.json({
-      isValid: true,
-      user: null,
-    })
+    res.json({ isValid: true, user: null })
   })
 
   return router

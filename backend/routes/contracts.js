@@ -76,7 +76,6 @@ export default (sequelize) => {
         ],
       })
 
-      // Преобразуем данные для фронтенда
       const transformedContracts = contracts.map((contract) => ({
         ...contract.toJSON(),
         meters: contract.Meters,

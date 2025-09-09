@@ -3,9 +3,9 @@ import cors from 'cors'
 import { Sequelize } from 'sequelize'
 import authRouter from './routes/auth.js'
 import contractsRouter from './routes/contracts.js'
-import defineUserModel from './schemas/User.js'
-import defineContractModel from './schemas/Contract.js'
-import defineMeterModel from './schemas/Meter.js'
+import dUserS from './schemas/User.js'
+import dContractS from './schemas/Contract.js'
+import dMeterS from './schemas/Meter.js'
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
@@ -13,26 +13,23 @@ const sequelize = new Sequelize({
   logging: false,
 })
 
-const User = defineUserModel(sequelize)
-const Contract = defineContractModel(sequelize)
-const Meter = defineMeterModel(sequelize)
+const User = dUserS(sequelize)
+const Contract = dContractS(sequelize)
+const Meter = dMeterS(sequelize)
 
-User.hasMany(Contract)
-Contract.belongsTo(User)
-Contract.hasMany(Meter)
-Meter.belongsTo(Contract)
-
-// Синхронизация моделей с базой данных
 const syncDatabase = async () => {
   try {
     await sequelize.sync({ force: true })
-    console.log('Database synchronized')
-
     await createTestData()
   } catch (error) {
-    console.error('Error synchronizing database:', error)
+    console.error(error)
   }
 }
+
+User.hasMany(Contract, { foreignKey: 'UserId' })
+Contract.belongsTo(User, { foreignKey: 'UserId' })
+Contract.hasMany(Meter, { foreignKey: 'ContractId' })
+Meter.belongsTo(Contract, { foreignKey: 'ContractId' })
 
 const createTestData = async () => {
   try {
@@ -62,17 +59,17 @@ const createTestData = async () => {
 
     console.log('Test data created successfully')
   } catch (error) {
-    console.error('Error creating test data:', error)
+    console.error(error)
   }
 }
 
 const testConnection = async () => {
   try {
     await sequelize.authenticate()
-    console.log('Connection to SQLite has been established successfully.')
+    console.log('Connection success')
     await syncDatabase()
   } catch (error) {
-    console.error('Unable to connect to the database:', error)
+    console.error(error)
   }
 }
 
@@ -82,15 +79,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// Подключение роутов
 app.use('/api/auth', authRouter(sequelize))
 app.use('/api/contracts', contractsRouter(sequelize))
 
-app.listen(3000, () => console.log('Server started on port 3000'))
-
-User.hasMany(Contract, { foreignKey: 'UserId' })
-Contract.belongsTo(User, { foreignKey: 'UserId' })
-Contract.hasMany(Meter, { foreignKey: 'ContractId' })
-Meter.belongsTo(Contract, { foreignKey: 'ContractId' })
-
-export { sequelize }
+app.listen(3000, () => console.log('Port 3000'))

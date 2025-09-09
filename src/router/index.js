@@ -51,11 +51,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.state.isLoggedIn
   const isAdmin = store.state.isAdmin
-
-  console.log('Navigation to:', to.name)
-  console.log('Auth status:', isAuthenticated)
-  console.log('Admin status:', isAdmin)
-
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'Login' })
   } else if (to.meta.requiresAdmin && !isAdmin) {

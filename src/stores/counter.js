@@ -11,116 +11,100 @@ export const store = reactive({
 
   async init() {
     axios.defaults.baseURL = 'http://localhost:3000/api'
-    const token = localStorage.getItem('token')
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    }
   },
 
   async login(code, isAdmin = false) {
     try {
-      if (!code || typeof code !== 'string') {
-        throw new Error('Неверный формат кода')
-      }
-
       const response = await axios.post('/auth/login', {
         code: code.trim(),
         isAdmin,
       })
 
-      const token = response.data.token
-      localStorage.setItem('token', token)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-
       localStorage.setItem('isLoggedIn', 'true')
       this.state.isLoggedIn = true
 
       if (isAdmin) {
-        if (!response.data.isAdmin) {
-          throw new Error('Ожидались права администратора')
-        }
-
         localStorage.setItem('isAdmin', 'true')
         this.state.isAdmin = true
 
-        // For admin, fetch all contracts
-        try {
-          const contractsResponse = await axios.get('/contracts/admin/contracts')
-          this.state.contracts = contractsResponse.data
-          localStorage.setItem('contracts', JSON.stringify(this.state.contracts))
-        } catch (error) {
-          console.error('Ошибка загрузки контрактов для администратора:', error)
-          // Even if contracts fail to load, admin login should still succeed
-          this.state.contracts = []
-          localStorage.setItem('contracts', JSON.stringify([]))
-        }
+        const contractsResponse = await axios.get('/contracts/admin/contracts')
+        this.state.contracts = contractsResponse.data
+        localStorage.setItem('contracts', JSON.stringify(this.state.contracts))
 
-        localStorage.removeItem('user')
         this.state.user = null
+        localStorage.removeItem('user')
       } else {
-        if (!response.data.user) {
-          throw new Error('Данные пользователя не получены')
-        }
-
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        localStorage.setItem('contracts', JSON.stringify(response.data.user.contracts || []))
+        localStorage.setItem('isAdmin', 'false')
+        this.state.isAdmin = false
 
         this.state.user = response.data.user
         this.state.contracts = response.data.user.contracts || []
-        this.state.isAdmin = false
-        localStorage.setItem('isAdmin', 'false')
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        localStorage.setItem('contracts', JSON.stringify(response.data.user.contracts || []))
       }
 
       return true
     } catch (error) {
       console.error('Ошибка входа:', error)
       this.logout()
-      throw error // Re-throw to handle in the component
+      throw error
     }
   },
 
   logout() {
-    localStorage.clear()
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('isAdmin')
+    localStorage.removeItem('user')
+    localStorage.removeItem('contracts')
     this.state.isLoggedIn = false
     this.state.isAdmin = false
     this.state.user = null
     this.state.contracts = []
-    delete axios.defaults.headers.common['Authorization']
   },
 
   async updateMeter(contractId, meterId, currentReading) {
-    const contract = this.state.contracts.find((c) => c.id === contractId)
-    const meter = contract?.meters.find((m) => m.id === meterId)
+    try {
+      const response = await axios.put(`/contracts/${contractId}/meters/${meterId}`, {
+        currentReading: parseFloat(currentReading),
+      })
 
-    if (!meter) return false
+      const updatedMeter = response.data
+      const contract = this.state.contracts.find((c) => c.id === contractId)
+      if (contract) {
+        const meterIndex = contract.meters.findIndex((m) => m.id === meterId)
+        if (meterIndex !== -1) {
+          contract.meters[meterIndex] = updatedMeter
+          localStorage.setItem('contracts', JSON.stringify(this.state.contracts))
+        }
+      }
 
-    const consumption = currentReading - meter.prevReading
-    const tariff = 5
-    const daysOverdue = 30
-    const penalty = consumption * tariff * 0.001 * daysOverdue
-
-    meter.currentReading = currentReading
-    meter.consumption = consumption
-    meter.penalty = penalty
-    meter.amount = consumption * tariff + penalty
-
-    return true
+      return true
+    } catch (error) {
+      console.error('Ошибка обновления счетчика:', error)
+      throw error
+    }
   },
 
-  // Оплата
-  async pay() {
-    if (!this.state.user) return false
+  async pay(userId) {
+    try {
+      await axios.post(`/contracts/${userId}/pay`)
 
-    this.state.contracts.forEach((contract) => {
-      contract.meters.forEach((meter) => {
-        meter.prevReading = meter.currentReading
-        meter.penalty = 0
-        meter.amount = 0
-        meter.consumption = 0
+      this.state.contracts.forEach((contract) => {
+        contract.meters.forEach((meter) => {
+          meter.prevReading = meter.currentReading
+          meter.penalty = 0
+          meter.amount = 0
+          meter.consumption = 0
+        })
       })
-    })
 
-    return true
+      localStorage.setItem('contracts', JSON.stringify(this.state.contracts))
+      return true
+    } catch (error) {
+      console.error('Ошибка оплаты:', error)
+      throw error
+    }
   },
 })
+
 store.init()
